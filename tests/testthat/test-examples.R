@@ -12,24 +12,28 @@ env <- new.env(parent = globalenv())
 cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 
 ## data in the database
-dat <- as.db.data.frame(abalone, table.name = "abalone", conn.id = cid, verbose = FALSE)
+#db.q("DROP TABLE IF EXISTS abalone5;")
+#dat <- as.db.data.frame(abalone, table.name = "abalone5", conn.id = cid, verbose = FALSE)
 
 ## data in memory
-dat.im <- abalone
+#dat.im <- abalone
 
 # ## ----------------------------------------------------------------------
 # ## Tests
-#
-# test_that("Examples of class attributes", {
-#     testthat::skip_on_cran()
-#     ## do some calculation inside test_that
-#     ## These values are not avilable outside test_that function
-#     fdb <- madlib.lm(rings ~ . - id - sex, data = dat)
-#     fm <- summary(lm(rings ~ . - id - sex, data = dat.im))
-#     ## 2, 3
-#     expect_that(fdb,      is_a("lm.madlib"))
-#     expect_that(fdb$data, is_a("db.data.frame"))
-# })
+
+test_that("Test gpapply", {
+    testthat::skip_on_cran()
+    ## do some calculation inside test_that
+    ## These values are not avilable outside test_that function
+    df <- data.frame(x = c(1:100))
+    dat1 <- as.db.data.frame(df, table.name = "single_col4", conn.id = cid, verbose = FALSE)
+    res = db.gpapply(X = dat1, MARGIN=NULL, FUN = sum, output.name=NULL, output.signature=list("x"="int"),
+        clear.existing=TRUE, case.sensitive=FALSE,output.distributeOn=NULL, language="plr")
+    ## 2, 3
+    message(res)
+    #expect_that(fdb,      is_a("lm.madlib"))
+    #expect_that(fdb$data, is_a("db.data.frame"))
+})
 
 ## ----------------------------------------------------------------------
 ## To make the computation results available to later test_that
