@@ -8,15 +8,15 @@ The limit on the length of lines is 80 columns and this is a strongly preferred 
 Put the opening brace last on the line. The exception is the top level function. Note the opening brace of a nested function puts the opening brace last on the line.
 ### Spaces
 * Use a space after these keywords:
-`if, while, for, return`
+  > `if, while, for, return`
 * Use one space around binary operators, such as
-`+ - * / = < > >= <= == != <- -> <<-`
+  > `+ - * / = < > >= <= == != <- -> <<-`
 * No space between the function name and its open parentheses, such as
-`a <- b (2)` is bad
+  > `a <- b (2)` is bad
 * No space around(inside) parenthesized expression, such as
-`( a )` is bad
+  > `( a )` is bad
 * No space between the expression and the next comma, such as
-`a <- list(a , b)` is bad
+  > `a <- list(a , b)` is bad
 ### Commenting
 The sharp sign(#) should be aligned to the following block, such as
 ```r
@@ -26,7 +26,7 @@ The sharp sign(#) should be aligned to the following block, such as
     }
 ```
 Put one space after the sharp sign, such as
-`#This is a comment` is bad
+  > `#This is a comment` is bad
 ### Quote
 Single quoted string or double quoted string are both OK. But you can't mix two style in one line.
 ### Naming
