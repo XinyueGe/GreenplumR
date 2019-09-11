@@ -7,15 +7,15 @@ The limit on the length of lines is 80 columns and this is a strongly preferred 
 ### Braces and Spaces
 Put the opening brace last on the line. The exception is the top level function. Note the opening brace of a nested function puts the opening brace last on the line.
 ### Spaces
-Use a space after these keywords:
+* Use a space after these keywords:
 `if, while, for, return`
-Use one space around binary operators, such as
+* Use one space around binary operators, such as
 `+ - * / = < > >= <= == != <- -> <<-`
-No space between the function name and its open parentheses, such as
+* No space between the function name and its open parentheses, such as
 `a <- b (2)` is bad
-No space around(inside) parenthesized expression, such as
+* No space around(inside) parenthesized expression, such as
 `( a )` is bad
-No space between the expression and the next comma, such as
+* No space between the expression and the next comma, such as
 `a <- list(a , b)` is bad
 ### Commenting
 The sharp sign(#) should be aligned to the following block, such as
