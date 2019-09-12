@@ -117,6 +117,16 @@ getRandomNameList <- function(n = 1)
     a[1]
 }
 
+.selected.equal.list <- function(Xattr)
+{
+    paste(Xattr$.col.name, Xattr$.col.name, sep='=', collapse=', ')
+}
+
+.selected.type.list <- function(Xattr)
+{
+    paste(Xattr$.col.name, Xattr$.col.udt_name, collapse=", ")
+}
+
 .create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer')
 {
     #generate output
@@ -137,6 +147,17 @@ getRandomNameList <- function(n = 1)
     return (createStmt)
 }
 
-.create.r.wrapper2 <- function() {
+.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, args, runtime.id, language) {
+    typeName <- .to.type.name(basename)
+    funName <- .to.func.name(basename)
+    listStr <- .extract.param.list(args)
+    if (nchar(listStr)>0)
+        listStr <- paste(', ', listStr, sep='')
+    funBody <- paste("# container: ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"), sep="")
+    localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
+    localcall <- sprintf("do.call(gplocalf, list(df%s))", listStr)
 
+    createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
+                          funName, selected.type.list, typeName, funBody, localdf, localcall, language)
+    return (createStmt)
 }

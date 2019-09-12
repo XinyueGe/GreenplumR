@@ -69,8 +69,11 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
         }
 
         # Create function
-        createStmt <- .create.r.wrapper(basename=basename, FUN=FUN, Xattr=ar, args=list(...),
-                                        runtime.id=runtime.id, language=language)
+        createStmt <- .create.r.wrapper2(basename=basename, FUN=FUN,
+                                selected.type.list = .selected.type.list(ar),
+                                selected.equal.list = .selected.equal.list(ar),
+                                args=list(...), runtime.id=runtime.id,
+                                language=language)
         db.q(createStmt, verbose = FALSE)
 
         # Run the generated query inside GPDB
