@@ -9,7 +9,7 @@ env <- new.env(parent = globalenv())
 #.port = get('pivotalr_port', envir=env)
 .verbose <- FALSE
 
-.host <- 'localhost'
+.host <- '172.17.0.1'
 .dbname <- "d_apply"
 .port <- 15432
 .language <- 'plr'

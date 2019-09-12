@@ -8,10 +8,11 @@ env <- new.env(parent = globalenv())
 #.dbname = get('pivotalr_dbname', envir=env)
 #.port = get('pivotalr_port', envir=env)
 
-.dbname = "rtest"
-.port = 15432
+.host <- '172.17.0.1'
+.dbname <- "rtest"
+.port <- 15432
 ## connection ID
-cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
+cid <- db.connect(host = .host, port = .port, dbname = .dbname, verbose = FALSE)
 
 ## data in the database
 dat <- as.db.data.frame(abalone, conn.id = cid, verbose = FALSE)
