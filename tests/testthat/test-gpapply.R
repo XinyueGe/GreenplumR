@@ -10,6 +10,7 @@ env <- new.env(parent = globalenv())
 .verbose <- FALSE
 
 .host <- '172.17.0.1'
+.host <- 'localhost'
 .dbname <- "d_apply"
 .port <- 15432
 .language <- 'plr'
@@ -59,7 +60,8 @@ test_that("Test prepare", {
 # test table has only one column
 dat.test <- dat.1
 .signature <- list("Score" = "float")
-fn.inc <- function(x) {
+fn.inc <- function(x)
+{
     return (x[1] + 1)
 }
 # ---------------------------------------------------------------

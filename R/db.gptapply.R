@@ -58,6 +58,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
     } else {
         create_type_str <- .create.type.sql(typeName, output.signature,
                                         case.sensitive = case.sensitive)
+        print(create_type_str)
         db.q(create_type_str)
     }
 
@@ -67,7 +68,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
     param.group.list <- ""
     relation_name <- ar$.content
 
-    param.name.list <- paste(ar$.col.name, collapse = ", ")
+    # param.name.list <- paste(ar$.col.name, collapse = ", ")
 
     if (isTRUE(case.sensitive)) {
         if (!is.null(output.name))
@@ -77,7 +78,8 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
             output.name <- tolower(output.name)
     }
     field.names <- paste('"', ar$.col.name, '"', sep = '')
-
+    param.name.list <- paste(field.names, collapse = ", ")
+    print(param.name.list)
     INDEX <- .index.translate(INDEX, ar)
     for (i in 1:length(ar$.col.name)) {
         if (i > 1) {
@@ -86,7 +88,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                 param.type.list <- paste(param.type.list, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], sep = "")
             }
             else {
-                param.group.list <- paste(param.group.list, " , array_agg(", field.names[i], ") AS ", ar$.col.name[i], sep = "")
+                param.group.list <- paste(param.group.list, " , array_agg(", field.names[i], ") AS ", field.names[i], sep = "")
                 param.type.list <- paste(param.type.list, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep = "")
             }
         }
@@ -96,21 +98,21 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                 param.type.list <- paste(param.type.list, ar$.col.name[i], " ", ar$.col.udt_name[i], sep = "")
             }
             else {
-                param.group.list <- paste(param.group.list, "array_agg(", field.names[i], ") AS ", ar$.col.name[i], sep = "")
+                param.group.list <- paste(param.group.list, "array_agg(", field.names[i], ") AS ", field.names[i], sep = "")
                 param.type.list <- paste(param.type.list, ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep = "")
             }
         }
     }
-    print(param.name.list)
-    print(param.group.list)
+    print(paste("param.name.list:", param.name.list))
+    print(paste("param.group.list:", param.group.list))
 
-    createStmt <- .create.r.wrapper(basename = basename, FUN = FUN, 
+    createStmt <- .create.r.wrapper2(basename = basename, FUN = FUN, 
                                 selected.type.list = param.type.list,
                                 selected.equal.list = .selected.equal.list(ar),
                                 args = list(...), runtime.id = runtime.id,
                                 language = language)
     print(createStmt)
-    # db.q(createStmt)
+    db.q(createStmt)
 
     # STEP: Create SQL
     funName <- .to.func.name(basename)
