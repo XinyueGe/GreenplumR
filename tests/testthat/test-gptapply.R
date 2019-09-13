@@ -82,8 +82,9 @@ test_that("Test output.name is NULL", {
     res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = TRUE, language = .language)
-    expect_equal(is.data.frame(res), TRUE)
-    expect_equal(nrow(res), nrow(dat.test))
+    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""))
+    expect_equal(is.data.frame(res) && is.data.frame(res2), TRUE)
+    expect_equal(nrow(res), nrow(res2))
     expect_equal(ncol(res), ncol(dat.test))
 
     # # case non-sensitive

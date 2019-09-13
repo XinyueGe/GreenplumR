@@ -9,33 +9,16 @@
     if (!is.character(INDEX))
         stop("INDEX value cannot be determined with value of type ", typeof(INDEX))
     # Take care: the INDEX may be case-sensitive
-    if (INDEX %in% ar$.col.name)
-        return (INDEX)
     index <- tolower(INDEX)
+    if (index != INDEX) {
+        # not lower case, may case-sensitive
+        if (INDEX %in% ar$.col.name)
+            return (INDEX)
+    }
     if (index %in% ar$.col.name)
         return (index)
     stop(paste("invalid INDEX value:", INDEX))
 }
-
-#.generate.gptapply.query <- function(output.name, funName, param.name.list, param.group.list, relation_name, INDEX, typeName, output.distributeOn, clear.existing){
-#    if (is.null(output.name))
-#    {
-#        query <- sprintf("WITH gpdbtmpa AS (\nSELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s GROUP BY %s) tmptbl\n)\nSELECT (gpdbtmpb::%s).* FROM gpdbtmpa;",
-#                funName, param.name.list, param.group.list, relation_name, INDEX, typeName)
-#    }
-#    else
-#    {
-#        #add distributeOn
-#        query <- sprintf("CREATE TABLE %s AS\nWITH gpdbtmpa AS (\nSELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s GROUP BY %s) tmptbl\n)\nSELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
-#                output.name, funName, param.name.list, param.group.list, relation_name, INDEX, typeName, .distribute.str(output.distributeOn))
-#        clearStmt <- .clear.existing.table(output.name, clear.existing)
-#        if (nchar(clearStmt) > 0)
-#                    query <- paste(clearStmt, query)
-#    }
-#
-#    return (query)
-#}
-
 
 db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL, clear.existing = FALSE, case.sensitive = FALSE,
         output.distributeOn = NULL, debugger.mode = FALSE, simplify = TRUE, runtime.id = "plc_r_shared", language = "plcontainer", ...)
@@ -49,7 +32,9 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
     .check.language(language)
 
     basename <- getRandomNameList()
-
+    # generate function parameter str
+    ar <- attributes(X)
+    relation_name <- ar$.content
     #create type
     typeName <- .to.type.name(basename)
     if (is.null(output.signature)) {
@@ -61,15 +46,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
         print(create_type_str)
         db.q(create_type_str)
     }
-
-    # generate function parameter str
-    ar <- attributes(X)
-    param.type.list <- ""
-    param.group.list <- ""
-    relation_name <- ar$.content
-
-    # param.name.list <- paste(ar$.col.name, collapse = ", ")
-
+    param.name.list <- paste(ar$.col.name, collapse = ", ")
     if (isTRUE(case.sensitive)) {
         if (!is.null(output.name))
             output.name <-  paste('"', unlist(strsplit(output.name, '\\.')),'"', sep='', collapse='.')
@@ -78,37 +55,41 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
             output.name <- tolower(output.name)
     }
     field.names <- paste('"', ar$.col.name, '"', sep = '')
-    param.name.list <- paste(field.names, collapse = ", ")
     print(param.name.list)
     INDEX <- .index.translate(INDEX, ar)
+    .to.type.field <- function(col.name, udt.name, isIndex) {
+        return (paste('"', col.name, '" ', udt.name,
+                    ifelse(isIndex, '', '[]'), sep = ''))
+    }
+    .to.group.field <- function(col.name, isIndex) {
+        if (!isIndex)
+            return (paste('array_agg("', col.name, '") AS ', col.name, sep = ''))
+        if (tolower(col.name) == col.name)
+            return (col.name)
+        return (paste('"', col.name, '" AS ', col.name, sep = ''))
+    }
+    
+    # param.type.list used as the input parameters of the created function
+    # parameter names should be double quoted, so they are case-sensitive
+    param.type.list <- ""
+    param.group.list <- ""
     for (i in 1:length(ar$.col.name)) {
         if (i > 1) {
-            if (ar$.col.name[i] == INDEX) {
-                param.group.list <- paste(param.group.list, ", ", field.names[i], sep = "")
-                param.type.list <- paste(param.type.list, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], sep = "")
-            }
-            else {
-                param.group.list <- paste(param.group.list, " , array_agg(", field.names[i], ") AS ", field.names[i], sep = "")
-                param.type.list <- paste(param.type.list, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep = "")
-            }
-        }
-        else {
-            if (ar$.col.name[i] == INDEX) {
-                param.group.list <- paste(param.group.list, field.names[i], sep = "")
-                param.type.list <- paste(param.type.list, ar$.col.name[i], " ", ar$.col.udt_name[i], sep = "")
-            }
-            else {
-                param.group.list <- paste(param.group.list, "array_agg(", field.names[i], ") AS ", field.names[i], sep = "")
-                param.type.list <- paste(param.type.list, ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep = "")
-            }
+            .isIndex <- (ar$.col.name[i] == INDEX)
+            param.group.list <- paste(param.group.list, ", ", 
+                                .to.group.field(ar$.col.name[i], .isIndex), sep = "")
+            param.type.list <- paste(param.type.list, ", ",
+                                .to.type.field(ar$.col.name[i], ar$.col.udt_name[i], .isIndex), sep = "")
+        } else {
+            .isIndex <- ar$.col.name[i] == INDEX
+            param.group.list <- .to.group.field(ar$.col.name[i], .isIndex)
+            param.type.list <- .to.type.field(ar$.col.name[i], ar$.col.udt_name[i], .isIndex)
         }
     }
-    print(paste("param.name.list:", param.name.list))
-    print(paste("param.group.list:", param.group.list))
-
     createStmt <- .create.r.wrapper2(basename = basename, FUN = FUN, 
                                 selected.type.list = param.type.list,
-                                selected.equal.list = .selected.equal.list(ar),
+                                # selected column from table X, it may be optimized
+                                selected.equal.list = .selected.equal.list(ar$.col.name),
                                 args = list(...), runtime.id = runtime.id,
                                 language = language)
     print(createStmt)
@@ -125,7 +106,8 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
     else
     {
         query <- sprintf("CREATE TABLE %s AS\nWITH gpdbtmpa AS (\nSELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s GROUP BY %s) tmptbl\n)\nSELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
-                output.name, funName, param.name.list, param.group.list, relation_name, index, typeName)
+                output.name, funName, param.name.list, param.group.list, relation_name, index, typeName, 
+                .distribute.str(output.distributeOn, case.sensitive = case.sensitive))
         clearStmt <- .clear.existing.table(output.name, clear.existing)
         if (nchar(clearStmt) > 0)
                     query <- paste(clearStmt, query)

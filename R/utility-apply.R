@@ -117,21 +117,35 @@ getRandomNameList <- function(n = 1)
     a[1]
 }
 
-.selected.equal.list <- function(Xattr)
+# construction of data.frame
+.selected.equal.list <- function(col.name)
 {
-    paste(Xattr$.col.name, Xattr$.col.name, sep='=', collapse=', ')
+    paste(col.name, col.name, sep = '=', collapse = ', ')
 }
 
+# parameter of created function
 .selected.type.list <- function(Xattr)
 {
-    paste(Xattr$.col.name, Xattr$.col.udt_name, collapse=", ")
+    paste(paste('"', Xattr$.col.name, '"', sep = ''), Xattr$.col.udt_name, collapse=", ")
+}
+
+# project of select clause
+.select.fields.list <- function(col.name)
+{
+    paste(lapply(col.name, function(i)
+            ifelse(tolower(i)==i, 
+                # if column is lower case or non-case-sensitive
+                i,
+                # column is case sensitive
+                paste('"', i, '" AS ', i, sep = ''))
+        ), sep = '', collapse = ', ')
 }
 
 .create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer')
 {
     #generate output
     local_data_frame_str <- paste(Xattr$.col.name, Xattr$.col.name, sep='=', collapse=', ')
-    param.list.str <- paste(Xattr$.col.name, Xattr$.col.udt_name, collapse=", ")
+    param.list.str <- paste(paste('"', Xattr$.col.name, '"', sep = ''), Xattr$.col.udt_name, collapse=", ")
     listStr <- .extract.param.list(args)
     if (nchar(listStr)>0)
         listStr <- paste(', ', listStr, sep='')
@@ -147,6 +161,8 @@ getRandomNameList <- function(n = 1)
     return (createStmt)
 }
 
+# selected.type.list should be `"field1" type1 (, "filed.x" typex)*
+# double quoted field name make it case sensitive in UDF 
 .create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, args, runtime.id, language) {
     typeName <- .to.type.name(basename)
     funName <- .to.func.name(basename)
