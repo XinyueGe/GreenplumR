@@ -62,7 +62,9 @@ dat.test <- dat.1
 .index <- "Rings"
 fn.inc <- function(x)
 {
-    return (x[1] + 1)
+    #should be case sensitive here 
+    return (x$Rings + 1)
+    #return (x[1] + 1)
 }
 # -----------------------------------------------------------
 # ONE COLUMN TABLE
@@ -81,7 +83,7 @@ test_that("Test output.name is NULL", {
     res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = TRUE, language = .language)
-    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""))
+    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""), verbose = .verbose)
     expect_equal(is.data.frame(res) && is.data.frame(res2), TRUE)
     expect_equal(nrow(res), nrow(res2))
     expect_equal(ncol(res), ncol(dat.test))
@@ -115,7 +117,7 @@ test_that("Test output.name is a table name", {
     res <- db.q(paste("SELECT 1 FROM \"", .output.name, "\"",
                 " WHERE \"Rings\" IS NOT NULL;", sep = ""),
                 verbose = .verbose)
-    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""))
+    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""), verbose = .verbose)
     expect_equal(is.data.frame(res) && is.data.frame(res2), TRUE)
     expect_equal(nrow(res), nrow(res2))
 
@@ -223,7 +225,7 @@ test_that("Test output.signature", {
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name,
                 " WHERE Rings IS NOT NULL;", sep = ""), verbose = .verbose)
-    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""))
+    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""), verbose = .verbose)
     expect_equal(is.data.frame(res) && is.data.frame(res2), TRUE)
     expect_equal(nrow(res), nrow(res2))
 
@@ -264,7 +266,7 @@ test_that("Test Function applyed to data", {
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Rings IS NOT NULL;", sep = ""),
                 verbose = .verbose)
-    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""))
+    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""), verbose = .verbose)
     expect_equal(is.data.frame(res) && is.data.frame(res2), TRUE)
     expect_equal(nrow(res), nrow(res2))
     # 3. FUN references outer environment
@@ -388,7 +390,7 @@ test_that("Test additional junk parameters", {
     res <- db.q(paste('SELECT 1 FROM "', .output.name,
                 '" WHERE "Rings" IS NOT NULL;', sep = ''),
                 verbose = .verbose)
-    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""))
+    res2 <- db.q(paste("SELECT count(1) FROM \"", tname.1.col, "\" GROUP BY \"", .index, "\";", sep = ""), verbose = .verbose)
     expect_equal(is.data.frame(res) && is.data.frame(res2), TRUE)
     expect_equal(nrow(res), nrow(res2))
 })

@@ -19,11 +19,11 @@
         if (INDEX %in% ar$.col.name)
             return (INDEX)
     }
-    if (index %in% ar$.col.name)
+    #if ar$.col.name has non-lower columns, since index is not case-sensitive, use tolower(col.name)
+    if (index %in% tolower(ar$.col.name))
         return (index)
-        stop(paste("invalid INDEX value:", INDEX))
-    }
-
+    stop(paste("invalid INDEX value:", INDEX))
+}
 
 # these SQLs may be executed.
 # 1. CREATE TYPE gptype_xxx
@@ -33,7 +33,7 @@
 db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL, clear.existing = FALSE, case.sensitive = FALSE,
         output.distributeOn = NULL, debugger.mode = FALSE, simplify = TRUE, runtime.id = "plc_r_shared", language = "plcontainer", ...)
 {
-
+    # handle case when colnames of X are not all lower, and case.sensitive = FALSE
     if (is.null(X) || !is.db.data.frame(X))
         stop("X must be a db.data.frame")
     if (!is.function(FUN))
@@ -125,7 +125,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                         query <- paste(clearStmt, query)
         }
         results <- db.q(query, nrows = NULL, verbose = FALSE)
-
+    
     #END OF tryCatch
     }, finally = {
         # STEP: Do cleanup
