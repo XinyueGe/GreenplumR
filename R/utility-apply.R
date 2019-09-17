@@ -1,4 +1,3 @@
-
 # needs to test
 .to.type.name <- function(basename)
 {
