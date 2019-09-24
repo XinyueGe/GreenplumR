@@ -8,7 +8,6 @@ env <- new.env(parent = globalenv())
 #.dbname = get('pivotalr_dbname', envir=env)
 #.port = get('pivotalr_port', envir=env)
 
-.host <- '172.17.0.1'
 .host <- 'localhost'
 .dbname <- "rtest"
 .port <- 15432
