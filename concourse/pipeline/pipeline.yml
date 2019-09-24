@@ -29,14 +29,14 @@ resources:
 - name: gpdb_src
   type: git
   source:
-    branch: {{gpdb-git-branch}}
-    uri: {{gpdb-git-remote}}
+    branch: 6X_STABLE
+    uri: https://github.com/greenplum-db/gpdb.git
 
 - name: GreenplumR_src
   type: git
   source:
-    branch: master
-    uri: https://github.com/greenplum-db/GreenplumR.git
+    branch: pipeline
+    uri: https://github.com/XinyueGe/GreenplumR.git
     
 
 - name: bin_gpdb_centos7
@@ -44,7 +44,7 @@ resources:
   source:
     bucket: ((gcs-bucket-intermediates))
     json_key: ((concourse-gcs-resources-service-account-key))
-    versioned_file: gpdb_master/bin_gpdb_centos7/bin_gpdb.tar.gz
+    versioned_file: 6X_STABLE/bin_gpdb_centos7/bin_gpdb.tar.gz
 
 # - name: bin_gpdb_ubuntu18
 #   type: gcs
@@ -56,9 +56,9 @@ resources:
 - name: bin_plr_centos7
   type: gcs
   source:
-    bucket: ((gcs-bucket-intermediates))
+    bucket: ((gcs-bucket))
     json_key: ((concourse-gcs-resources-service-account-key))
-    regexp: plr/released/gpdb6/plr-(*)-rhel7-x86_64.gppkg
+    regexp: plr/released/gpdb6/plr-(.*)-rhel7_x86_64.gppkg
 
 
 jobs:
