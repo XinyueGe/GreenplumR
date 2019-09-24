@@ -19,6 +19,7 @@ pushd ${TOP_DIR}/GreenplumR_src
   gppkg -i ${TOP_DIR}/bin_plr/plr-*.gppkg
   sleep 1
   gpstop -arf
+  createdb rtest
   createdb d_apply
   createdb d_tapply
   # start test
