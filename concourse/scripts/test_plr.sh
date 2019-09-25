@@ -72,11 +72,12 @@ function install_pkg() {
     ;;
   ubuntu)
     apt update
-    DEBIAN_FRONTEND=noninteractive apt install -y r-base pkg-config
-    #texlive-latex-base texinfo texlive-fonts-extra
+    DEBIAN_FRONTEND=noninteractive apt install -y r-base pkg-config \
+        texlive-latex-base
+    # texinfo texlive-fonts-extra
     ;;
   *)
-    echo "unknown OSVER = $TEST_OS"
+    echo "unknown TEST_OS = $TEST_OS"
     exit 1
     ;;
   esac
@@ -97,7 +98,7 @@ function _main() {
     time setup_gpadmin_user
 
     time make_cluster
-    
+
     time prepare_lib
     time test
 }

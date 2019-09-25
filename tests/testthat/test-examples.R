@@ -9,7 +9,6 @@ env <- new.env(parent = globalenv())
 #.port = get('pivotalr_port', envir=env)
 
 .host <- 'localhost'
-#.host <- '172.17.0.2'
 .dbname <- "rtest"
 .port <- 15432
 .language <- tolower(Sys.getenv('GPRLANGUAGE'))

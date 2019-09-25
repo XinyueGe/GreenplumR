@@ -10,7 +10,6 @@ env <- new.env(parent = globalenv())
 .verbose <- FALSE
 
 .host <- 'localhost'
-#.host <- '172.17.0.2'
 .dbname <- "d_apply"
 .port <- 15432
 .language <- tolower(Sys.getenv('GPRLANGUAGE'))
