@@ -91,7 +91,8 @@ function install_libraries_heavy() {
   case $TEST_OS in
   centos)
     yum install -y epel-release
-    yum install -y R
+    # postgresql-devel is needed by RPostgreSQL
+    yum install -y R postgresql-devel
     ;;
   ubuntu)
     apt update
