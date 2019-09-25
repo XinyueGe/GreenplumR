@@ -43,7 +43,7 @@ pushd ${TOP_DIR}/GreenplumR_src
   unset R_LIBS_USER
   if [ "$MODE" == "light" ] ; then
     echo "library(testthat)" > test_script.R
-    echo "testthat::test_dir('tests', reporter = 'failreporter', stop_on_failure = TRUE)" >> test_script.R
+    echo "testthat::test_dir('tests', reporter = 'stop', stop_on_failure = TRUE)" >> test_script.R
     R --no-save < test_script.R
   else
     R CMD check .
