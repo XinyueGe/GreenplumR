@@ -6,28 +6,27 @@ echo "OLDPATH = ${OLDPATH}"
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOP_DIR=${CWDIR}/../../../
 GPDB_CONCOURSE_DIR=${TOP_DIR}/gpdb_src/concourse/scripts
+# light or full
 MODE=${MODE:=light}
 
 source "${GPDB_CONCOURSE_DIR}/common.bash"
 
-#
 function test_run() {
   cat > /home/gpadmin/test_prepare.sh <<-EOF
 #!/bin/bash -l
 # install plr and restart gpdb
 # then prepare databases needed by test
 set -exo pipefail
-  source /usr/local/greenplum-db-devel/greenplum_path.sh
-  source ${TOP_DIR}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
-  gppkg -i ${TOP_DIR}/bin_plr/plr-*.gppkg
-  sleep 1
-  source /usr/local/greenplum-db-devel/greenplum_path.sh
-  source ${TOP_DIR}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
-  echo "R_HOME=`R RHOME`"
-  gpstop -arf
-  createdb rtest
-  createdb d_apply
-  createdb d_tapply
+source /usr/local/greenplum-db-devel/greenplum_path.sh
+source ${TOP_DIR}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
+gppkg -i ${TOP_DIR}/bin_plr/plr-*.gppkg
+sleep 1
+source /usr/local/greenplum-db-devel/greenplum_path.sh
+source ${TOP_DIR}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
+gpstop -arf
+createdb rtest
+createdb d_apply
+createdb d_tapply
 EOF
   cat > /home/gpadmin/test_run.sh <<-EOF
 #!/bin/bash -l
@@ -37,10 +36,9 @@ pushd ${TOP_DIR}/GreenplumR_src
   # clear environment introduced by gpdb that may affect R
   sleep 3
   export PATH=${OLDPATH}
-  export R_HOME=`R RHOME`
-  echo "R_HOME=`R RHOME`"
-  unset LD_LIBRARY_PATH
+  unset R_HOME
   unset R_LIBS_USER
+  unset LD_LIBRARY_PATH
   if [ "$MODE" == "light" ] ; then
     echo "library(testthat)" > test_script.R
     echo "testthat::test_dir('tests', reporter = 'stop', stop_on_failure = TRUE)" >> test_script.R
@@ -77,8 +75,32 @@ function setup_gpadmin_user() {
     ${GPDB_CONCOURSE_DIR}/setup_gpadmin_user.bash
 }
 
+function install_libraries() {
+    # install system libraries
+    case $TEST_OS in
+    centos)
+      yum install -y epel-release
+      # postgresql-devel is needed by RPostgreSQL
+      yum install -y R postgresql-devel
+      ;;
+    ubuntu)
+      apt update
+      DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev
+      ;;
+    *)
+      echo "unknown TEST_OS = $TEST_OS"
+      exit 1
+      ;;
+    esac
+    # install r libraries
+    ${CWDIR}/install_r_package.R testthat
+    ${CWDIR}/install_r_package.R RPostgreSQL
+    ${CWDIR}/install_r_package.R shiny
+    ${CWDIR}/install_r_package.R ini
+}
+
 function install_libraries_full() {
-  install_libraries_light
+  install_libraries
   # install system libraries
   case $TEST_OS in
   centos)
@@ -94,29 +116,7 @@ function install_libraries_full() {
 }
 
 function install_libraries_light() {
-  # install system libraries
-  case $TEST_OS in
-  centos)
-    yum install -y epel-release
-    # postgresql-devel is needed by RPostgreSQL
-    yum install -y R postgresql-devel
-    ;;
-  ubuntu)
-    apt update
-    DEBIAN_FRONTEND=noninteractive apt install -y r-base \
-            libpq-dev
-    ;;
-  *)
-    echo "unknown TEST_OS = $TEST_OS"
-    exit 1
-    ;;
-  esac
-    # install r libraries
-    ${CWDIR}/install_r_package.R testthat
-    ${CWDIR}/install_r_package.R RPostgreSQL
-    ${CWDIR}/install_r_package.R shiny
-    ${CWDIR}/install_r_package.R ini
-
+    install_libraries
     tar czf ${TOP_DIR}/GreenplumR.tar.gz ${TOP_DIR}/GreenplumR_src
     R CMD INSTALL ${TOP_DIR}/GreenplumR.tar.gz
 }

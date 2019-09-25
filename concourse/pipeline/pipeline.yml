@@ -13,7 +13,6 @@ resource_types:
     repository: frodenas/gcs-resource
 
 resources:
-
 # Image Resources
 - name: centos-gpdb-dev-7
   type: docker-image
@@ -28,7 +27,6 @@ resources:
     tag: latest
 
 # Github Source Codes
-
 - name: gpdb_src
   type: git
   source:
@@ -69,9 +67,7 @@ resources:
     json_key: ((concourse-gcs-resources-service-account-key))
     regexp: plr/released/gpdb6/plr-(.*)-ubuntu18.04_x86_64.gppkg
 
-
 jobs:
-
 - name: test_plr_light_centos7
   plan:
   - aggregate:
