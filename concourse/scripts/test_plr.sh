@@ -6,11 +6,12 @@ echo "OLDPATH = ${OLDPATH}"
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOP_DIR=${CWDIR}/../../../
 GPDB_CONCOURSE_DIR=${TOP_DIR}/gpdb_src/concourse/scripts
+MODE=${MODE:=light}
 
 source "${GPDB_CONCOURSE_DIR}/common.bash"
 
-# test_heavy runs `R CMD check .`
-function test_heavy() {
+#
+function test_run() {
   cat > /home/gpadmin/test_prepare.sh <<-EOF
 #!/bin/bash -l
 # install plr and restart gpdb
@@ -40,7 +41,13 @@ pushd ${TOP_DIR}/GreenplumR_src
   echo "R_HOME=`R RHOME`"
   unset LD_LIBRARY_PATH
   unset R_LIBS_USER
-  R CMD check .
+  if [ "$MODE" == "light" ] ; then
+    echo "library(testthat)" > test_script.R
+    echo "testthat::test_dir('tests')" >> test_script.R
+    R --no-save < test_script.R
+  else
+    R CMD check .
+  fi
 popd
 EOF
 
@@ -129,24 +136,6 @@ function install_libraries_light() {
     ${CWDIR}/install_r_package.R ini
 }
 
-function install_plr() {
-    source /usr/local/greenplum-db-devel/greenplum_path.sh
-    source ${TOP_DIR}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
-    gppkg -i ${TOP_DIR}/bin_plr/plr-*.gppkg
-    sleep 1
-}
-
-function restart_and_clear_env() {
-    source /usr/local/greenplum-db-devel/greenplum_path.sh
-    source ${TOP_DIR}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
-    gpstop -arf
-    export PATH=${OLDPATH}
-    export R_HOME=`R RHOME`
-    unset LD_LIBRARY_PATH$
-    unset R_LIBS_USER$
-    sleep 1
-}
-
 # install libraries (light/heavy)
 # install gpdb
 # setup gpadmin
@@ -158,15 +147,12 @@ function restart_and_clear_env() {
 # run tests (light/heavy)
 function _main() {
     TEST_OS=$(determine_os)
-    time install_libraries_heavy
+    time install_libraries_${MODE}
     time install_gpdb
     time setup_gpadmin_user
     time make_cluster
 
-#    time install_plr
-#    time restart_and_clear_env
-
-    time test_heavy
+    time test_run
 }
 
 _main "$@"
