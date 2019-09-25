@@ -78,31 +78,19 @@ function setup_gpadmin_user() {
 }
 
 function install_libraries_full() {
+  install_libraries_light
   # install system libraries
   case $TEST_OS in
   centos)
-    yum install -y epel-release
-    # postgresql-devel is needed by RPostgreSQL
-    yum install -y R postgresql-devel
+    # no more packages need to install
     ;;
   ubuntu)
-    apt update
-    DEBIAN_FRONTEND=noninteractive apt install -y r-base pkg-config \
-        libpq-dev texlive-latex-base texlive-fonts-extra
-    ;;
-  *)
-    echo "unknown TEST_OS = $TEST_OS"
-    exit 1
+    DEBIAN_FRONTEND=noninteractive apt install -y pkg-config \
+        texlive-latex-base texlive-fonts-extra
     ;;
   esac
 
-  # install r libraries
-    ${CWDIR}/install_r_package.R devtools
-    ${CWDIR}/install_r_package.R testthat
-    ${CWDIR}/install_r_package.R DBI
-    ${CWDIR}/install_r_package.R RPostgreSQL
-    ${CWDIR}/install_r_package.R shiny
-    ${CWDIR}/install_r_package.R ini
+  # install additional r libraries
 }
 
 function install_libraries_light() {
@@ -110,6 +98,7 @@ function install_libraries_light() {
   case $TEST_OS in
   centos)
     yum install -y epel-release
+    # postgresql-devel is needed by RPostgreSQL
     yum install -y R postgresql-devel
     ;;
   ubuntu)
