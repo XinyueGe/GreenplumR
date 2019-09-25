@@ -77,16 +77,7 @@ function setup_gpadmin_user() {
     ${GPDB_CONCOURSE_DIR}/setup_gpadmin_user.bash
 }
 
-function prepare_lib() {
-    ${CWDIR}/install_r_package.R devtools
-    ${CWDIR}/install_r_package.R testthat
-    ${CWDIR}/install_r_package.R DBI
-    ${CWDIR}/install_r_package.R RPostgreSQL
-    ${CWDIR}/install_r_package.R shiny
-    ${CWDIR}/install_r_package.R ini
-}
-
-function install_libraries_heavy() {
+function install_libraries_full() {
   # install system libraries
   case $TEST_OS in
   centos)
@@ -97,7 +88,7 @@ function install_libraries_heavy() {
   ubuntu)
     apt update
     DEBIAN_FRONTEND=noninteractive apt install -y r-base pkg-config \
-        texlive-latex-base texlive-fonts-extra
+        libpq-dev texlive-latex-base texlive-fonts-extra
     ;;
   *)
     echo "unknown TEST_OS = $TEST_OS"
@@ -123,7 +114,8 @@ function install_libraries_light() {
     ;;
   ubuntu)
     apt update
-    DEBIAN_FRONTEND=noninteractive apt install -y r-base
+    DEBIAN_FRONTEND=noninteractive apt install -y r-base \
+            libpq-dev
     ;;
   *)
     echo "unknown TEST_OS = $TEST_OS"
@@ -140,7 +132,7 @@ function install_libraries_light() {
     R CMD INSTALL ${TOP_DIR}/GreenplumR.tar.gz
 }
 
-# install libraries (light/heavy)
+# install libraries (light/full)
 # install gpdb
 # setup gpadmin
 # make cluster
@@ -148,7 +140,7 @@ function install_libraries_light() {
 # restart gpdb
 # clear environment introduced by gpdb
 #
-# run tests (light/heavy)
+# run tests (light/full)
 function _main() {
     TEST_OS=$(determine_os)
     time install_libraries_${MODE}
