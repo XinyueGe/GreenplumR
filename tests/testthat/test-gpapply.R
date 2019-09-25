@@ -10,11 +10,12 @@ env <- new.env(parent = globalenv())
 .verbose <- FALSE
 
 .host <- 'localhost'
+#.host <- '172.17.0.2'
 .dbname <- "d_apply"
 .port <- 15432
 .language <- tolower(Sys.getenv('GPRLANGUAGE'))
 if (.language != 'plr' && .language != 'plcontainer')
-    stop(paste0("invalid GPLANGUAGE:", .language))
+    stop(paste0("invalid GPRLANGUAGE:", .language))
 ## connection ID
 cid <- db.connect(host = .host, port = .port, dbname = .dbname, verbose = .verbose)
 .nrow.test <- 10
@@ -63,7 +64,7 @@ test_that("Test prepare", {
     expect_equal(nrow(res), 1)
 
     res <- db.q(paste0("SELECT 1 FROM pg_extension WHERE extname='", .language, "';"))
-    expect_equal(is.db.data.frame(res) && nrow(res) == 1, TRUE)
+    expect_equal(is.data.frame(res) && nrow(res) == 1, TRUE)
 })
 
 # test table has only one column
