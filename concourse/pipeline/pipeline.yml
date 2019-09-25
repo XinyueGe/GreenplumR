@@ -1,7 +1,10 @@
 groups:
 - name: plr
   jobs:
-  - test_plr_centos7
+  - test_plr_light_centos7
+  - test_plr_full_centos7
+  - test_plr_light_ubuntu18
+  - test_plr_full_ubuntu18
 
 resource_types:
 - name: gcs
