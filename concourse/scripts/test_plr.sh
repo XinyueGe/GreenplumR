@@ -119,7 +119,7 @@ function install_libraries_light() {
   case $TEST_OS in
   centos)
     yum install -y epel-release
-    yum install -y R
+    yum install -y R postgresql-devel
     ;;
   ubuntu)
     apt update
