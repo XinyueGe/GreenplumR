@@ -73,8 +73,7 @@ function install_pkg() {
   ubuntu)
     apt update
     DEBIAN_FRONTEND=noninteractive apt install -y r-base pkg-config \
-        texlive-latex-base
-    # texinfo texlive-fonts-extra
+        texlive-latex-base texlive-fonts-extra
     ;;
   *)
     echo "unknown TEST_OS = $TEST_OS"
