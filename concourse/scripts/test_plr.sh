@@ -133,7 +133,11 @@ function install_libraries_light() {
     # install r libraries
     ${CWDIR}/install_r_package.R testthat
     ${CWDIR}/install_r_package.R RPostgreSQL
+    ${CWDIR}/install_r_package.R shiny
     ${CWDIR}/install_r_package.R ini
+
+    tar czf ${TOP_DIR}/GreenplumR.tar.gz ${TOP_DIR}/GreenplumR_src
+    R CMD INSTALL ${TOP_DIR}/GreenplumR.tar.gz
 }
 
 # install libraries (light/heavy)
